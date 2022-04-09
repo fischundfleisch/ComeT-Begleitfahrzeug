@@ -181,7 +181,7 @@ String create_html_header() {
   html += ">End Time</button></a>";
   html += "<a href=\"/save\">";
   html += "<button";
-  html += button_end;
+  html += button_save;
   html += ">Speichern</button></a>";
   html += "<br> <br> <a href = \"/connect\">Zugangsdaten eingeben</a>";
   html += "</body></html>";
