@@ -112,7 +112,6 @@ void connect_sta_and_ap() {
     Serial.println(".");
   }
 
-  delay(5000);
 }
 
 
@@ -129,9 +128,7 @@ void connect_time_server() {
 
 void loop() {
     ArduinoOTA.handle();
-  Serial.println("loop");
   rotation_check_ = digitalRead(PIN_REED);
-  Serial.println(rotation_check_);
   if (rotation_check_ == rotation_last_ ) {
     //nichts hat sich geändert, tu auch nichts
   }
