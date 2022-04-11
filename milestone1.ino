@@ -32,8 +32,6 @@ String st = "";
 String content = "";
 String esid = "";
 String epass = "";
-//const char * ssid = "FRITZ!Box 7530 AE";
-//const char * password = "91462373212147207613";
 
 IPAddress local_ip(192, 168, 4, 1);
 IPAddress gateway(192, 168, 4, 1);
