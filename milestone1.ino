@@ -50,44 +50,16 @@ void setup() {
   for (int i = 32; i < 96; ++i) {
     epass += char(EEPROM.read(i));
   }
-connect_sta_and_ap();
- ArduinoOTA
-    .onStart([]() {
-      String type;
-      if (ArduinoOTA.getCommand() == U_FLASH)
-        type = "sketch";
-      else // U_SPIFFS
-        type = "filesystem";
-
-      // NOTE: if updating SPIFFS this would be the place to unmount SPIFFS using SPIFFS.end()
-      Serial.println("Start updating " + type);
-    })
-    .onEnd([]() {
-      Serial.println("\nEnd");
-    })
-    .onProgress([](unsigned int progress, unsigned int total) {
-      Serial.printf("Progress: %u%%\r", (progress / (total / 100)));
-    })
-    .onError([](ota_error_t error) {
-      Serial.printf("Error[%u]: ", error);
-      if (error == OTA_AUTH_ERROR) Serial.println("Auth Failed");
-      else if (error == OTA_BEGIN_ERROR) Serial.println("Begin Failed");
-      else if (error == OTA_CONNECT_ERROR) Serial.println("Connect Failed");
-      else if (error == OTA_RECEIVE_ERROR) Serial.println("Receive Failed");
-      else if (error == OTA_END_ERROR) Serial.println("End Failed");
-    });
-
-  ArduinoOTA.begin();
-
+  
+WiFi.mode(WIFI_MODE_APSTA);         // später differenzieren
+connect_ap();
+connect_station();  
   
   pinMode(PIN_REED, INPUT);
   digitalWrite(PIN_REED, HIGH);
 }
 
-void connect_sta_and_ap() {
-
-  WiFi.mode(WIFI_MODE_APSTA);
-
+void connect_ap(){
   WiFi.softAP(SSID_CART, PASSWORD_CART);
   WiFi.softAPConfig(local_ip, gateway, subnet);
   Serial.println("Wifi SoftAP");
@@ -99,7 +71,9 @@ void connect_sta_and_ap() {
   server.on("/connect", handle_connect);
   server.on("/setting", handle_setting);
   server.begin();
+}
 
+void connect_station(){
   WiFi.begin(esid.c_str(), epass.c_str());
 
   for (int x=0; x<15; x++) {
@@ -111,7 +85,6 @@ void connect_sta_and_ap() {
   }
 
 }
-
 
 void connect_time_server() {
   configTime(GMTOFFSET_SEC, DAYLIGHTOFFSET_SEC, NTPSERVER);
