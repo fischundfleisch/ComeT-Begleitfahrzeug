@@ -4,9 +4,6 @@
 #include "FS.h"
 #include "SD_MMC.h"
 #include "EEPROM.h"
-#include <ESPmDNS.h>
-#include <WiFiUdp.h>
-#include <ArduinoOTA.h>
 
 const char* SSID_CART = "ComeT Begleitfahrzeug";
 const char* PASSWORD_CART = "123456789";
@@ -28,7 +25,6 @@ String button_save = "";
 // für das Speichern der SSID und dem Einlesen des EEPROM:
 int i = 0;
 int status_code_ = 0;
-String st = "";
 String content = "";
 String esid = "";
 String epass = "";
