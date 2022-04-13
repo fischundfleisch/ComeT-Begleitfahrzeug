@@ -28,6 +28,7 @@ int status_code_ = 0;
 String content = "";
 String esid = "";
 String epass = "";
+String timestamp_;
 
 IPAddress local_ip(192, 168, 4, 1);
 IPAddress gateway(192, 168, 4, 1);
@@ -149,6 +150,7 @@ String create_html_header() {
   html += button_save;
   html += ">Speichern</button></a>";
   html += "<br> <br> <a href = \"/connect\">Zugangsdaten eingeben</a>";
+  html += timestamp_;
   html += "</body></html>";
   return html;
 }
@@ -201,7 +203,8 @@ void handle_save() {         // ACHTUNG: nur 8.3-Dateinamen: 8 Zeichen Dateiname
 
 void handle_connect() {
   content = "<!DOCTYPE HTML>\r\n<html>Bitte Zugangsdaten eingeben";
-  content += "<form method =\"get\" action =\"setting\"><label>SSID: </label><input name=\"ssid\" lenght=32><input name=\"pass\" lenght=64><input type=\"submit\"></form>";
+  content += "<form method =\"get\" action =\"setting\"><label>SSID: </label><input name=\"ssid\" lenght=32><input name=\"pass\" lenght=64><input type=\"submit\">;
+  content += "<input type=\"time\" name=\"timestamp\" step=\"1\"></form>";
   content += "</html>";
   server.send(200, "text/html", content);
 }
@@ -224,6 +227,8 @@ void readFile(fs::FS & fs, const char * path) {
 void handle_setting() {
   String qsid = server.arg("ssid");
   String qpass = server.arg("pass");
+  timestamp_ = server.arg("timestamp");
+  
   if (qsid.length() > 0 && qpass.length() > 0) {
     for (int i = 0; i < 96; i++) {
       EEPROM.write(i, 0);
