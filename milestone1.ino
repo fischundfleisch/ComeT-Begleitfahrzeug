@@ -1,18 +1,13 @@
 #include "time.h"
 #include <WiFi.h>
 #include <WebServer.h>
-#include "FS.h"
 #include "SD_MMC.h"
-#include "EEPROM.h"
 
 const char* SSID_CART = "ComeT Begleitfahrzeug";
 const char* PASSWORD_CART = "123456789";
-const char* NTPSERVER = "pool.ntp.org";
-const long GMTOFFSET_SEC = 3600;
-const int DAYLIGHTOFFSET_SEC = 3600;
+
 String starttime_ = "test";
 String endtime_ = "";
-char time_buff_[20];
 int counter_ = 0;
 const int PIN_REED = 12;
 unsigned int wheel_rotation_ = 0;
@@ -26,31 +21,19 @@ String button_save = "";
 int i = 0;
 int status_code_ = 0;
 String content = "";
-String esid = "";
-String epass = "";
+
 String timestamp_;
 
 IPAddress local_ip(192, 168, 4, 1);
 IPAddress gateway(192, 168, 4, 1);
 IPAddress subnet(255, 255, 255, 0);
-int wifi_status_ = WL_IDLE_STATUS;
 WebServer server(80);
 
 
 void setup() {
   Serial.begin(115200);
-  EEPROM.begin(512);
-  // Lese aus dem EEPROM die Zugangsdaten
-  for (int i = 0; i < 32; ++i) {
-    esid += char(EEPROM.read(i));
-  }
-  for (int i = 32; i < 96; ++i) {
-    epass += char(EEPROM.read(i));
-  }
   
-WiFi.mode(WIFI_MODE_APSTA);         // später differenzieren
 connect_ap();
-connect_station();  
   
   pinMode(PIN_REED, INPUT);
   digitalWrite(PIN_REED, HIGH);
@@ -70,32 +53,9 @@ void connect_ap(){
   server.begin();
 }
 
-void connect_station(){
-  WiFi.begin(esid.c_str(), epass.c_str());
-
-  for (int x=0; x<15; x++) {
-    if (WiFi.status() == WL_CONNECTED) {
-      break;
-    }
-    delay(500);
-    Serial.println(".");
-  }
-
-}
-
-void connect_time_server() {
-  configTime(GMTOFFSET_SEC, DAYLIGHTOFFSET_SEC, NTPSERVER);
-  struct tm timeinfo;
-  if (getLocalTime(&timeinfo) == false) {
-    Serial.println("Fehler");
-    return;
-  }
-  Serial.println(&timeinfo, "%d. %B %Y %H:%M:%S");
-  strftime(time_buff_, 20, "%d.%m.%Y %H:%M:%S", &timeinfo);
-}
 
 void loop() {
-    ArduinoOTA.handle();
+//    ArduinoOTA.handle();
   rotation_check_ = digitalRead(PIN_REED);
   if (rotation_check_ == rotation_last_ ) {
     //nichts hat sich geändert, tu auch nichts
@@ -160,8 +120,7 @@ void handle_root() {
 }
 
 void handle_starttime() {               // wird so den User jedes Mal beim connect_time_server rausschmeißen
-  connect_time_server();
-  starttime_ = String(time_buff_);
+
   //    connect_soft_ap();
   button_start = " disabled";
   button_end = "";
@@ -170,8 +129,7 @@ void handle_starttime() {               // wird so den User jedes Mal beim conne
 }
 
 void handle_endtime() {
-  connect_time_server();
-  endtime_ = String(time_buff_);
+
   //connect_soft_ap();
   button_start = "";
   button_end = " disabled";
@@ -203,7 +161,7 @@ void handle_save() {         // ACHTUNG: nur 8.3-Dateinamen: 8 Zeichen Dateiname
 
 void handle_connect() {
   content = "<!DOCTYPE HTML>\r\n<html>Bitte Zugangsdaten eingeben";
-  content += "<form method =\"get\" action =\"setting\"><label>SSID: </label><input name=\"ssid\" lenght=32><input name=\"pass\" lenght=64><input type=\"submit\">;
+  content += "<form method =\"get\" action =\"setting\"><input type=\"submit\">";
   content += "<input type=\"time\" name=\"timestamp\" step=\"1\"></form>";
   content += "</html>";
   server.send(200, "text/html", content);
@@ -225,31 +183,9 @@ void readFile(fs::FS & fs, const char * path) {
 }
 
 void handle_setting() {
-  String qsid = server.arg("ssid");
-  String qpass = server.arg("pass");
+
   timestamp_ = server.arg("timestamp");
   
-  if (qsid.length() > 0 && qpass.length() > 0) {
-    for (int i = 0; i < 96; i++) {
-      EEPROM.write(i, 0);
-    }
-
-    for (int i = 0; i < qsid.length(); i++) {
-      EEPROM.write(i, qsid[i]);
-    }
-    for (int i = 0; i < qpass.length(); i++) {
-      EEPROM.write(i + 32, qpass[i]);
-    }
-    EEPROM.commit();
-
-    content = "{\"Success\":\"saved to eeprom...reset to boot into new wifi\"}";
-    status_code_ = 200;
-    //eventuell: ESP.restart();
-  }
-  else {
-    content = "{\"Error\":\"404 not found\}";
-    status_code_ = 404;
-  }
   server.sendHeader("Access-Control-Allow-Origin", "*");
   server.send(status_code_, "application/json", content);
 }
