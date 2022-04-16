@@ -39,6 +39,12 @@ void setup() {
     Serial.println("An Error has occurred while mounting SPIFFS");
     return;
   }
+//    bool formatted = SPIFFS.format();
+//  if(formatted){
+//    Serial.println("\n\nSuccess formatting");
+//  }else{
+//    Serial.println("\n\nError formatting");
+//  }
   readFile(SPIFFS, "/routen.txt");
   connect_ap();
 
@@ -76,6 +82,7 @@ void loop() {
     rotation_last_ = rotation_check_;
     wheel_rotation_ = counter_;
   }
+    readFile(SPIFFS, "/routen.txt");
 
   server.handleClient();
 
@@ -147,7 +154,7 @@ void handle_endtime() {
 
 void handle_save() {
   String fileSave = starttime_ + "," + endtime_ + "," + distance_ + "\n\r";
-  appendFile(SPIFFS, "/test.txt", fileSave.c_str());
+  appendFile(SPIFFS, "/routen.txt", fileSave.c_str());
 
   button_start = "";
   button_end = "";
@@ -166,7 +173,7 @@ void handle_connect() {
 void readFile(fs::FS & fs, const char * path) {
   Serial.printf("Reading file: %s\n", path);
 
-  File file = fs.open("/routen.txt", FILE_READ);
+  File file = fs.open("/routen.txt", "r");
   if (!file) {
     Serial.println("Failed to open file for reading");
     return;
@@ -174,8 +181,11 @@ void readFile(fs::FS & fs, const char * path) {
 
   Serial.print("Read from file: ");
   while (file.available()) {
-    file_read += file.read();
-    Serial.println(file_read);
+    file_read = file.readString();
+//    file_read += file.read();
+//    Serial.println(file_read);
+      Serial.write(file.read());
+
   }
   file.close();
 }
@@ -191,7 +201,7 @@ void handle_setting() {
 void appendFile(fs::FS & fs, const char * path, const char * message) {
   Serial.printf("Appending to file: %s\n", path);
 
-  File file = fs.open("/test.txt", FILE_APPEND);
+  File file = fs.open("/routen.txt", FILE_APPEND);
   if (!file) {
     Serial.println("Failed to open file for appending");
     return;
