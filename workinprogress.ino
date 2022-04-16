@@ -37,8 +37,13 @@ std::vector<String> read_file_to_vector(fs::FS& fs, const String& file_name)
 {
   std::vector<String> str_vec;
   File file = fs.open(file_name,"r");
-   while (file.available()) {
-    str_vec.emplace_back(file.readStringUntil('\n'));
+   while (int nr_of_bytes_left = file.available()) {
+     String str_line = file.readStringUntil('\n');
+     Serial.print("# of byte left:");
+     Serial.print(nr_of_bytes_left);
+     Serial.println("act line:" + str_line);
+     str_vec.emplace_back(str_line);
+     
    }
   return str_vec;  
 }
@@ -54,21 +59,6 @@ void setup() {
 
   pinMode(PIN_REED, INPUT);
   digitalWrite(PIN_REED, HIGH);
-  
-  std::vector<String> vec_str = read_file_to_vector(SPIFFS, "/routen.txt");
-  //To test write the last 10 lines to serial
-  Serial.println("nr of lines read:"+vec_str.size());
-  for(int i=1;i<10;i++)
-  {
-    int nr_of_lines = vec_str.size();
-    if(i > nr_of_lines)
-      return;
-    Serial.print("Line ");
-    Serial.print(10-1);
-    Serial.print(":");
-    Serial.println(vec_str.at(nr_of_lines-i));
-  }
-
 }
 
 void connect_ap() {
@@ -99,7 +89,19 @@ void loop() {
   }
   
   server.handleClient();
-
+  std::vector<String> vec_str = read_file_to_vector(SPIFFS, "/routen.txt");
+  //To test write the last 10 lines to serial
+  Serial.println("nr of lines read:"+vec_str.size());
+  for(int i=1;i<10;i++)
+  {
+    int nr_of_lines = vec_str.size();
+    if(i > nr_of_lines)
+      return;
+    Serial.print("Line ");
+    Serial.print(10-1);
+    Serial.print(":");
+    Serial.println(vec_str.at(nr_of_lines-i));
+  }
 }
 
 String create_html_header() {
