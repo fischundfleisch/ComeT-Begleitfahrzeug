@@ -37,10 +37,15 @@ std::vector<String> read_file_to_vector(fs::FS& fs, const String& file_name)
 {
   std::vector<String> str_vec;
   File file = fs.open(file_name,"r");
-   while (int nr_of_bytes_left = file.available()) {
-     String str_line = file.readStringUntil('\n');
+  if(file==false)
+  {
+    Serial.println("- failed to open file:"+file_name);
+    return str_vec;
+  }
+  while (int nr_of_bytes_left = file.available()) {
      Serial.print("# of byte left:");
      Serial.print(nr_of_bytes_left);
+     String str_line = file.readStringUntil('\n');
      Serial.println("act line:" + str_line);
      str_vec.emplace_back(str_line);
      
