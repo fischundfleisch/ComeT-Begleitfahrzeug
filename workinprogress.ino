@@ -43,7 +43,7 @@ std::vector<String> read_file_to_vector(fs::FS& fs, const String& file_name)
     return str_vec;
   }
   while (int nr_of_bytes_left = file.available()) {
-     String str_line = file.readStringUntil('\n');
+     String str_line = file.readStringUntil('\r');
      str_vec.emplace_back(str_line);
    }
   return str_vec;  
@@ -97,6 +97,8 @@ void loop() {
   const int max_nr_of_display_lines=10;
   for(int i=1;i<max_nr_of_display_lines+1;i++)
   {
+    if(i>total_nr_of_lines)
+      break;
     Serial.print("Line ");
     Serial.print(total_nr_of_lines-i+1);
     Serial.print(":");
