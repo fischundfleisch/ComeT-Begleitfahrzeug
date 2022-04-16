@@ -33,6 +33,15 @@ IPAddress gateway(192, 168, 4, 2);
 IPAddress subnet(255, 255, 255, 0);
 WebServer server(80);
 
+std::vector<String> read_file_to_vector(fs::FS& fs, const String& file_name)
+{
+  std::vector<String> str_vec;
+  File file = fs.open(file_name,"r");
+   while (file.available()) {
+    str_vec.emplace_back(file.readStringUntil('\n'));
+   }
+  return str_vec;  
+}
 
 void setup() {
   Serial.begin(115200);
@@ -40,17 +49,25 @@ void setup() {
     Serial.println("An Error has occurred while mounting SPIFFS");
     return;
   }
-  //    bool formatted = SPIFFS.format();
-  //  if(formatted){
-  //    Serial.println("\n\nSuccess formatting");
-  //  }else{
-  //    Serial.println("\n\nError formatting");
-  //  }
-  readFile(SPIFFS, "/routen.txt");
+  
   connect_ap();
 
   pinMode(PIN_REED, INPUT);
   digitalWrite(PIN_REED, HIGH);
+  
+  std::vector<String> vec_str = read_file_to_vector(SPIFFS, "/routen.txt");
+  //To test write the last 10 lines to serial
+  Serial.println("nr of lines read:"+vec_str.size());
+  for(int i=1;i<10;i++)
+  {
+    int nr_of_lines = vec_str.size();
+    if(i > nr_of_lines)
+      return;
+    Serial.print("Line ");
+    Serial.print(10-1);
+    Serial.print(":");
+    Serial.println(vec_str.at(nr_of_lines-i));
+  }
 
 }
 
@@ -80,8 +97,7 @@ void loop() {
     rotation_last_ = rotation_check_;
     wheel_rotation_ = counter_;
   }
-  readFile(SPIFFS, "/routen.txt");
-
+  
   server.handleClient();
 
 }
