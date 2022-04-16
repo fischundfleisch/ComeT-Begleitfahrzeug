@@ -10,7 +10,7 @@ const char* SSID_CART = "ComeT Begleitfahrzeug";
 const char* PASSWORD_CART = "123456789";
 
 String starttime_ = "test";
-String endtime_ = "";
+String endtime_ = "test";
 int counter_ = 0;
 const int PIN_REED = 12;
 unsigned int wheel_rotation_ = 0;
@@ -24,8 +24,8 @@ String button_save = "";
 int i = 0;
 int status_code_ = 0;
 String content = "";
-
 String timestamp_;
+String file_read = "";
 
 IPAddress local_ip(192, 168, 4, 1);
 IPAddress gateway(192, 168, 4, 1);
@@ -35,14 +35,19 @@ WebServer server(80);
 
 void setup() {
   Serial.begin(115200);
-  
-connect_ap();
-  
+  if (!SPIFFS.begin(true)) {
+    Serial.println("An Error has occurred while mounting SPIFFS");
+    return;
+  }
+  readFile(SPIFFS, "/routen.txt");
+  connect_ap();
+
   pinMode(PIN_REED, INPUT);
   digitalWrite(PIN_REED, HIGH);
+  
 }
 
-void connect_ap(){
+void connect_ap() {
   WiFi.softAP(SSID_CART, PASSWORD_CART);
   WiFi.softAPConfig(local_ip, gateway, subnet);
   Serial.println("Wifi SoftAP");
@@ -58,7 +63,6 @@ void connect_ap(){
 
 
 void loop() {
-//    ArduinoOTA.handle();
   rotation_check_ = digitalRead(PIN_REED);
   if (rotation_check_ == rotation_last_ ) {
     //nichts hat sich geändert, tu auch nichts
@@ -77,7 +81,7 @@ void loop() {
 
 }
 
-String create_html_header(String routes) {
+String create_html_header() {
   String html = "<!DOCTYPE html>";
   html += "<html><head><title>ComeT Begleitfahrzeug</title>";
   html += "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"> </head><body><a href=\"/\">";
@@ -90,6 +94,7 @@ String create_html_header(String routes) {
   html += "<td><strong>Entfernung</strong></td>";
   html += "</tr><tr>";
   html += "<td>";
+
   html += starttime_;
   html += "</td><td>";
   html += endtime_;
@@ -114,40 +119,40 @@ String create_html_header(String routes) {
   html += ">Speichern</button></a>";
   html += "<br> <br> <a href = \"/connect\">Zugangsdaten eingeben</a>";
   html += timestamp_;
-  html += routes;
+  html += file_read;
   html += "</body></html>";
   return html;
 }
 
 void handle_root() {
-  server.send(200, "text/html", create_html_header(readFile(SPIFFS, "/routen.txt")) );
+  server.send(200, "text/html", create_html_header() );
 }
 
-void handle_starttime() {               
- 
+void handle_starttime() {
+
   button_start = " disabled";
   button_end = "";
   button_save = "";
-  server.send(200, "text/html", create_html_header(readFile(SPIFFS, "/routen.txt")));
+  server.send(200, "text/html", create_html_header());
 }
 
 void handle_endtime() {
-
+  
   //connect_soft_ap();
   button_start = "";
   button_end = " disabled";
   button_save = "";
-  server.send(200, "text/html", create_html_header(readFile(SPIFFS, "/routen.txt")));
+  server.send(200, "text/html", create_html_header());
 }
 
-void handle_save() {         
-  String fileSave = starttime_ + "," + endtime_ + "," + distance_ + "\n";       //hier endterminieren? Nötig?
-  appendFile(SPIFFS, "/routen.txt", fileSave.c_str());
+void handle_save() {
+  String fileSave = starttime_ + "," + endtime_ + "," + distance_ + "\n\r";
+  appendFile(SPIFFS, "/test.txt", fileSave.c_str());
 
   button_start = "";
   button_end = "";
   button_save = " disabled";
-  server.send(200, "text/html", create_html_header(readFile(SPIFFS, "/routen.txt")));
+  server.send(200, "text/html", create_html_header());
 }
 
 void handle_connect() {
@@ -158,43 +163,41 @@ void handle_connect() {
   server.send(200, "text/html", content);
 }
 
-String readFile(fs::FS & fs, const char * path) {
+void readFile(fs::FS & fs, const char * path) {
   Serial.printf("Reading file: %s\n", path);
-String file_read="";
 
-  File file = fs.open(path);
+  File file = fs.open("/routen.txt", FILE_READ);
   if (!file) {
     Serial.println("Failed to open file for reading");
-    return file_read;
+    return;
   }
 
   Serial.print("Read from file: ");
-  while (file.available()) { 
+  while (file.available()) {
     file_read += file.read();
     Serial.println(file_read);
   }
   file.close();
-  return file_read;
 }
 
 void handle_setting() {
-
   timestamp_ = server.arg("timestamp");
-  
+
   server.sendHeader("Access-Control-Allow-Origin", "*");
-  server.send(status_code_, "application/json", content);
+  server.send(200, "text/html", create_html_header());
 }
 
 
 void appendFile(fs::FS & fs, const char * path, const char * message) {
   Serial.printf("Appending to file: %s\n", path);
 
-  File file = fs.open(path, FILE_APPEND);
+  File file = fs.open("/test.txt", FILE_APPEND);
   if (!file) {
     Serial.println("Failed to open file for appending");
     return;
   }
   if (file.print(message)) {
+    Serial.println(message);
     Serial.println("Message appended");
   } else {
     Serial.println("Append failed");
