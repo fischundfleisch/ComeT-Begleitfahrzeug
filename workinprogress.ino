@@ -39,18 +39,18 @@ void setup() {
     Serial.println("An Error has occurred while mounting SPIFFS");
     return;
   }
-//    bool formatted = SPIFFS.format();
-//  if(formatted){
-//    Serial.println("\n\nSuccess formatting");
-//  }else{
-//    Serial.println("\n\nError formatting");
-//  }
+  //    bool formatted = SPIFFS.format();
+  //  if(formatted){
+  //    Serial.println("\n\nSuccess formatting");
+  //  }else{
+  //    Serial.println("\n\nError formatting");
+  //  }
   readFile(SPIFFS, "/routen.txt");
   connect_ap();
 
   pinMode(PIN_REED, INPUT);
   digitalWrite(PIN_REED, HIGH);
-  
+
 }
 
 void connect_ap() {
@@ -59,11 +59,8 @@ void connect_ap() {
   Serial.println("Wifi SoftAP");
   Serial.println(SSID_CART);
   server.on("/", handle_root);
-  server.on("/starttime", handle_starttime);
-  server.on("/endtime", handle_endtime);
   server.on("/save", handle_save);
-  server.on("/connect", handle_connect);
-  server.on("/setting", handle_setting);
+  server.on("/submit", handle_root);
   server.begin();
 }
 
@@ -82,7 +79,7 @@ void loop() {
     rotation_last_ = rotation_check_;
     wheel_rotation_ = counter_;
   }
-    readFile(SPIFFS, "/routen.txt");
+  readFile(SPIFFS, "/routen.txt");
 
   server.handleClient();
 
@@ -112,63 +109,45 @@ String create_html_header() {
   html += "</td></tr></tbody></table>";
 
   html += "<br> <br>";
-  html += "<a href=\"/starttime\">";
-  html += "<button";
-  html += button_start;
-  html += ">Start Time</button></a>";
-  html += "<a href=\"/endtime\">";
-  html += "<button";
-  html += button_end;
-  html += ">End Time</button></a>";
+
   html += "<a href=\"/save\">";
   html += "<button";
   html += button_save;
   html += ">Speichern</button></a>";
-  html += "<br> <br> <a href = \"/connect\">Zugangsdaten eingeben</a>";
-  html += timestamp_;
+
   html += file_read;
+  html += "<form action =\"/submit\">";
+  html += "<input type=\"time\" name=\"starttime\">";
+  html += "<input type=\"submit\" value = \"Startzeit\">";
+  html += "<input type=\"time\" name=\"endtime\">";
+  html += "<input type=\"submit\" value = \"Endzeit\">";
+  html += "</form>";
   html += "</body></html>";
   return html;
 }
 
 void handle_root() {
+  if (server.hasArg("starttime")) {
+    if (server.arg("starttime") != NULL) {
+      starttime_ = server.arg("starttime");
+    }
+  }
+  if (server.hasArg("endtime")) {
+    if (server.arg("endtime") != NULL) {
+      endtime_ = server.arg("endtime");
+    }
+  }
   server.send(200, "text/html", create_html_header() );
 }
 
-void handle_starttime() {
-
-  button_start = " disabled";
-  button_end = "";
-  button_save = "";
-  server.send(200, "text/html", create_html_header());
-}
-
-void handle_endtime() {
-  
-  //connect_soft_ap();
-  button_start = "";
-  button_end = " disabled";
-  button_save = "";
-  server.send(200, "text/html", create_html_header());
-}
 
 void handle_save() {
   String fileSave = starttime_ + "," + endtime_ + "," + distance_ + "\n\r";
   appendFile(SPIFFS, "/routen.txt", fileSave.c_str());
-
-  button_start = "";
-  button_end = "";
-  button_save = " disabled";
+ // button_save = " disabled";
   server.send(200, "text/html", create_html_header());
 }
 
-void handle_connect() {
-  content = "<!DOCTYPE HTML>\r\n<html>Einstellungen";
-  content += "<form method =\"get\" action =\"setting\"><input type=\"submit\">";
-  content += "<input type=\"time\" name=\"timestamp\" step=\"1\"></form>";
-  content += "</html>";
-  server.send(200, "text/html", content);
-}
 
 void readFile(fs::FS & fs, const char * path) {
   Serial.printf("Reading file: %s\n", path);
@@ -181,22 +160,14 @@ void readFile(fs::FS & fs, const char * path) {
 
   Serial.print("Read from file: ");
   while (file.available()) {
-    file_read = file.readString();
-//    file_read += file.read();
-//    Serial.println(file_read);
-      Serial.write(file.read());
+    file_read += file.readString();
+    //    file_read += file.read();
+    //    Serial.println(file_read);
+    Serial.write(file.read());
 
   }
   file.close();
 }
-
-void handle_setting() {
-  timestamp_ = server.arg("timestamp");
-
-  server.sendHeader("Access-Control-Allow-Origin", "*");
-  server.send(200, "text/html", create_html_header());
-}
-
 
 void appendFile(fs::FS & fs, const char * path, const char * message) {
   Serial.printf("Appending to file: %s\n", path);
