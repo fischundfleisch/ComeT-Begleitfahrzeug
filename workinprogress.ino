@@ -6,7 +6,7 @@
 
 #define FORMAT_SPIFFS_IF_FAILED true
 
-const char* SSID_CART = "ComeT Begleitfahrzeug";
+const char* SSID_CART = "ComeT Begleitfahrzeug Marlene";
 const char* PASSWORD_CART = "123456789";
 
 String starttime_ = "test";
@@ -26,9 +26,10 @@ int status_code_ = 0;
 String content = "";
 String timestamp_;
 String file_read = "";
+int unique_id = 0;
 
-IPAddress local_ip(192, 168, 4, 1);
-IPAddress gateway(192, 168, 4, 1);
+IPAddress local_ip(192, 168, 4, 2);
+IPAddress gateway(192, 168, 4, 2);
 IPAddress subnet(255, 255, 255, 0);
 WebServer server(80);
 
@@ -117,9 +118,9 @@ String create_html_header() {
 
   html += file_read;
   html += "<form action =\"/submit\">";
-  html += "<input type=\"time\" name=\"starttime\">";
+  html += "<input type=\"datetime-local\" name=\"starttime\">";
   html += "<input type=\"submit\" value = \"Startzeit\">";
-  html += "<input type=\"time\" name=\"endtime\">";
+  html += "<input type=\"datetime-local\" name=\"endtime\">";
   html += "<input type=\"submit\" value = \"Endzeit\">";
   html += "</form>";
   html += "</body></html>";
