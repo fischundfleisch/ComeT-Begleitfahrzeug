@@ -11,13 +11,13 @@ const char* PASSWORD_CART = "123456789";
 
 String starttime_ = "test";
 String endtime_ = "test";
+
 int counter_ = 0;
 const int PIN_REED = 14;
 unsigned int wheel_rotation_ = 0;
 float distance_ = 0;
 bool rotation_check_ = false;
 bool rotation_last_ = false;
-
 String button_save = "";
 int i = 0;
 int status_code_ = 0;
@@ -131,7 +131,7 @@ void handle_root() {
 void handle_save() {
   String fileSave = starttime_ + "," + endtime_ + "," + distance_ + "\n\r";
   appendFile(SPIFFS, "/routen.txt", fileSave.c_str());
- // button_save = " disabled";
+  button_save = " style=\"background-color: blue\"";
   server.send(200, "text/html", create_html_header());
 }
 
