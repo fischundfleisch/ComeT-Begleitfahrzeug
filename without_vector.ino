@@ -116,9 +116,14 @@ String create_html_header() {
 }
 
 void handle_root() {
+  char buff[20];
   if (server.hasArg("starttime")) {
     if (server.arg("starttime") != NULL) {
+      
       starttime_ = server.arg("starttime");
+      //server.arg("starttime").toCharArray(buff, sizeof(buff) - 1);
+      // time_t start_time_ = (uint32_t)buff;
+      //https://www.esp8266.com/viewtopic.php?p=92884
     }
   }
   if (server.hasArg("endtime")) {
