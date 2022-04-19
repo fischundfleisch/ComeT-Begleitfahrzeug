@@ -25,6 +25,7 @@ int status_code_ = 0;
 String content = "";
 String timestamp_;
 String file_read_ = "";
+time_t start_time_;
 
 IPAddress local_ip(192, 168, 4, 2);
 IPAddress gateway(192, 168, 4, 2);
@@ -121,8 +122,8 @@ void handle_root() {
     if (server.arg("starttime") != NULL) {
       
       starttime_ = server.arg("starttime");
-      //server.arg("starttime").toCharArray(buff, sizeof(buff) - 1);
-      // time_t start_time_ = (uint32_t)buff;
+      server.arg("starttime").toCharArray(buff, sizeof(buff) - 1);
+      start_time_ = (uint32_t)buff;
       //https://www.esp8266.com/viewtopic.php?p=92884
     }
   }
