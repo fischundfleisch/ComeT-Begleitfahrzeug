@@ -15,6 +15,7 @@ String endtime_ = "test";
 int counter_ = 0;
 const int PIN_REED = 14;
 unsigned int wheel_rotation_ = 0;
+const int WHEEL_DIAMETER = 80;
 float distance_ = 0;
 bool rotation_check_ = false;
 bool rotation_last_ = false;
@@ -70,7 +71,7 @@ void loop() {
   }
   else {
     counter_++;
-    distance_ = counter_ * 84 / 100;
+    distance_ = counter_ * WHEEL_DIAMETER / 100;
     rotation_last_ = rotation_check_;
     wheel_rotation_ = counter_;
   }
