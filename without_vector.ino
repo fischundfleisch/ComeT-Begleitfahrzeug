@@ -4,13 +4,13 @@
 #include "FS.h"
 #include "SPIFFS.h"
 
-//#define FORMAT_SPIFFS_IF_FAILED true FINGER WEG!!!!!
+//#define FORMAT_SPIFFS_IF_FAILED true //FINGER WEG!!!!!
 
 const char* SSID_CART = "ComeT Begleitfahrzeug Marlene";
 const char* PASSWORD_CART = "123456789";
 
-String starttime_ = "test";
-String endtime_ = "test";
+String starttime_ = "";         // = NULL???
+String endtime_ = "";
 
 int counter_ = 0;
 const int PIN_REED = 14;
@@ -33,7 +33,7 @@ IPAddress subnet(255, 255, 255, 0);
 WebServer server(80);
 
 void setup() {
-//  bool formatted = SPIFFS.format();                     FINGER WEG! Braucht man zum Formatieren von SPIFFS
+//  bool formatted = SPIFFS.format();                     //FINGER WEG! Braucht man zum Formatieren von SPIFFS
 //    if(formatted){
 //      Serial.println("\n\nSuccess formatting");
 //   }else{
@@ -59,6 +59,7 @@ void connect_ap() {
   server.on("/", handle_root);
   server.on("/save", handle_save);
   server.on("/submit", handle_root);
+  server.on("/readData", handle_readData);
   server.begin();
 }
 
@@ -105,7 +106,7 @@ String create_html_header() {
   html += "<button";
   html += button_save;
   html += ">Speichern</button></a>";
-  html += file_read_;
+  html += "<a href= \"/readData\"><button>Aufzeichnungen</button></a>";
   html += "<form action =\"/submit\">";
   html += "<input type=\"datetime-local\" name=\"starttime\">";
   html += "<input type=\"submit\" value = \"Startzeit\">";
@@ -136,7 +137,7 @@ void handle_root() {
 }
 
 void handle_save() {
-  String fileSave = starttime_ + "," + endtime_ + "," + distance_ + "\n\r";
+  String fileSave = starttime_ + ", " + endtime_ + ", " + distance_  +"<br> <p>";
   appendFile(SPIFFS, "/routen.txt", fileSave.c_str());
   button_save = " style=\"background-color: blue\"";
   server.send(200, "text/html", create_html_header());
@@ -176,3 +177,7 @@ void appendFile(fs::FS & fs, const char * path, const char * message) {
   }
   file.close();
 }
+ void handle_readData() {
+    readFile(SPIFFS, "/routen.txt");
+server.send(200, "text/html", file_read_);
+ }
