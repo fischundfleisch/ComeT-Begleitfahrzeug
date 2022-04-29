@@ -101,7 +101,8 @@ else {
 String create_html_header() {
   String html = "<!DOCTYPE html>";
   html += "<html><head><title>ComeT Begleitfahrzeug</title>";
-  html += "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\ http-equiv=\"refresh\" content=\"30\"> </head><body><a href=\"/\">";
+  html += "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">";
+  html += "<meta http-equiv=\"refresh\" content=\"30\"> </head><body><a href=\"/\">";
   html += "<h1>ComeT Begleitfahrzeug</h1></a>";
   html += "<br> <br> <br>";
   html += "<table> <tbody> <tr>";
