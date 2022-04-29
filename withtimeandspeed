@@ -87,12 +87,17 @@ void get_time_elapsed() {
 }
 
 void get_speed() {
-  int kilometer = distance_ /1000;
-  int hour = minutes_elapsed_ /60;
 
-if (minutes_elapsed_ < 60) {
-  speed_ = distance_ / minutes_elapsed_ ;     // Falsch, bitte korrigieren
+if ((minutes_elapsed_ < 10) || (distance_ < 1000)) {     // Ein Minimum muss zurück gelegt werden für eine vernünftige Berechnung
+  speed_ = 0;
 }
+else {
+    speed_ = distance_ / minutes_elapsed_ *0,06;
+    // Gesamtanzahl der Meter / Gesamtanzahl der Minuten = m/min, *0,06 = * 60 / 1000
+}
+}
+
+
 String create_html_header() {
   String html = "<!DOCTYPE html>";
   html += "<html><head><title>ComeT Begleitfahrzeug</title>";
@@ -123,6 +128,9 @@ String create_html_header() {
   html+= "<br>Minuten seit Start: ";
   html+= minutes_elapsed_;
   html+= "<br>";
+  html+= "<p> Geschwindigkeit: ";
+  html+= speed_;
+  html+= "</p>";
   html += "<form action =\"/submit\">";
   html += "<input type=\"datetime-local\" name=\"starttime\">";
   html += "<input type=\"submit\" value = \"Startzeit\">";
