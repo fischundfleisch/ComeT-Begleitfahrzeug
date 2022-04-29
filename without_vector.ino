@@ -26,6 +26,8 @@ String content = "";
 String timestamp_;
 String file_read_ = "";
 time_t start_time_;
+unsigned long minutes_elapsed_;
+int speed_;
 
 IPAddress local_ip(192, 168, 4, 2);
 IPAddress gateway(192, 168, 4, 2);
@@ -80,6 +82,17 @@ void loop() {
   server.handleClient();
 }
 
+void get_time_elapsed() {
+  minutes_elapsed_ = millis()/60000;
+}
+
+void get_speed() {
+  int kilometer = distance_ /1000;
+  int hour = minutes_elapsed_ /60;
+
+if (minutes_elapsed_ < 60) {
+  speed_ = distance_ / minutes_elapsed_ ;     // Falsch, bitte korrigieren
+}
 String create_html_header() {
   String html = "<!DOCTYPE html>";
   html += "<html><head><title>ComeT Begleitfahrzeug</title>";
@@ -107,6 +120,9 @@ String create_html_header() {
   html += button_save;
   html += ">Speichern</button></a>";
   html += "<a href= \"/readData\"><button>Aufzeichnungen</button></a>";
+  html+= "<br>Minuten seit Start: ";
+  html+= minutes_elapsed_;
+  html+= "<br>";
   html += "<form action =\"/submit\">";
   html += "<input type=\"datetime-local\" name=\"starttime\">";
   html += "<input type=\"submit\" value = \"Startzeit\">";
@@ -119,6 +135,7 @@ String create_html_header() {
 
 void handle_root() {
   char buff[20];
+    get_time_elapsed();
   if (server.hasArg("starttime")) {
     if (server.arg("starttime") != NULL) {
       
