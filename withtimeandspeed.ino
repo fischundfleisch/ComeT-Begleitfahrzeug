@@ -15,6 +15,7 @@ String endtime_ = "";
 int counter_ = 0;
 const int PIN_REED = 14;
 unsigned int wheel_rotation_ = 0;
+unsigned int wheel_rotation_last_ = 0;
 const int WHEEL_DIAMETER = 80;
 float distance_ = 0;
 bool rotation_check_ = false;
@@ -28,6 +29,8 @@ String file_read_ = "";
 time_t start_time_;
 unsigned long minutes_elapsed_;
 int speed_;
+float minutes_standing_ = 0;
+float minutes_walking_ = 0;
 
 IPAddress local_ip(192, 168, 4, 2);
 IPAddress gateway(192, 168, 4, 2);
@@ -128,6 +131,10 @@ String create_html_header() {
   html += "<a href= \"/readData\"><button>Aufzeichnungen</button></a>";
   html+= "<br>Minuten seit Start: ";
   html+= minutes_elapsed_;
+  html+= ", Minuten Gehzeit: ";
+  html+= minutes_walking_;
+  html+= ", Minuten Pause: ";
+  html+= minutes_standing_;
   html+= "<br>";
   html+= "<p> Geschwindigkeit: ";
   html+= speed_;
@@ -143,8 +150,16 @@ String create_html_header() {
 }
 
 void handle_root() {
-  char buff[20];
     get_time_elapsed();
+    if (wheel_rotation_ == wheel_rotation_last_) {            // Achtung, noch ziemlich unsauber. Gleich nach dem Starten ein paar Male händisch aktualisieren und schon bekommt man 
+    minutes_standing_ += 0.5;                               // eventuell negative Werte zurück
+    minutes_walking_ = minutes_elapsed_ - minutes_standing_;
+  }
+  else {
+    wheel_rotation_last_ = wheel_rotation_;
+  }
+  char buff[20];
+
   if (server.hasArg("starttime")) {
     if (server.arg("starttime") != NULL) {
       
