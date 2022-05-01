@@ -27,7 +27,7 @@ String content = "";
 String timestamp_;
 String file_read_ = "";
 time_t start_time_;
-unsigned long minutes_elapsed_;
+float minutes_elapsed_;
 float speed_;
 float minutes_standing_ = 0;
 float minutes_walking_ = 0;
@@ -88,7 +88,7 @@ void loop() {
 }
 
 void get_time_elapsed() {
-  minutes_elapsed_ = millis() / 60000;
+  minutes_elapsed_ = millis() / 60000.;
 }
 
 void get_speed() {
@@ -97,7 +97,7 @@ void get_speed() {
     speed_ = 0;
   }
   else {
-    speed_ = distance_ / minutes_elapsed_ * 60 / 1000;
+    speed_ = distance_ / minutes_walking_ * 60 / 1000;
     // Gesamtanzahl der Meter / Gesamtanzahl der Minuten = m/min, *0,06 = * 60 / 1000
   }
 }
@@ -132,11 +132,11 @@ String create_html_header() {
   html += ">Speichern</button></a>";
   html += "<a href= \"/readData\"><button>Aufzeichnungen</button></a>";
   html += "<br>Minuten seit Start: ";
-  html += minutes_elapsed_;
+  html += (int)minutes_elapsed_;
   html += ", Minuten Gehzeit: ";
-  html += minutes_walking_;
+  html += (int)minutes_walking_;
   html += ", Minuten Pause: ";
-  html += minutes_standing_;
+  html += (int)minutes_standing_;
   html += "<br>";
   html += "<p> Geschwindigkeit: ";
   html += speed_;
@@ -158,7 +158,7 @@ void get_time_standing() {
       pause_on_ = true;
     }
     else if (minutes_elapsed_ > minutes_standing_) {
-      minutes_standing_ = (millis() - pause_start_) / 60000UL;
+      minutes_standing_ = (millis() - pause_start_) / 60000.;       
     }
   }
   else {
@@ -230,7 +230,7 @@ void appendFile(fs::FS & fs, const char * path, const char * message) {
   } else {
     Serial.println("Append failed");
   }
-  file.close();
+  file.close(); 
 }
 void handle_readData() {
   readFile(SPIFFS, "/routen.txt");
