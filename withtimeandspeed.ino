@@ -157,8 +157,8 @@ void get_time_standing() {
       pause_start_ = millis();
       pause_on_ = true;
     }
-    else {
-      minutes_standing_ = millis() - pause_start_ / 60000UL;
+    else if (minutes_elapsed_ > minutes_standing_) {
+      minutes_standing_ = (millis() - pause_start_) / 60000UL;
     }
   }
   else {
