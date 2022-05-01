@@ -28,7 +28,7 @@ String timestamp_;
 String file_read_ = "";
 time_t start_time_;
 unsigned long minutes_elapsed_;
-int speed_;
+float speed_;
 float minutes_standing_ = 0;
 float minutes_walking_ = 0;
 
@@ -38,12 +38,12 @@ IPAddress subnet(255, 255, 255, 0);
 WebServer server(80);
 
 void setup() {
-//  bool formatted = SPIFFS.format();                     //FINGER WEG! Braucht man zum Formatieren von SPIFFS
-//    if(formatted){
-//      Serial.println("\n\nSuccess formatting");
-//   }else{
-//      Serial.println("\n\nError formatting");
-//   }
+  //  bool formatted = SPIFFS.format();                     //FINGER WEG! Braucht man zum Formatieren von SPIFFS
+  //    if(formatted){
+  //      Serial.println("\n\nSuccess formatting");
+  //   }else{
+  //      Serial.println("\n\nError formatting");
+  //   }
   Serial.begin(115200);
   if (!SPIFFS.begin(true)) {
     Serial.println("An Error has occurred while mounting SPIFFS");
@@ -86,18 +86,18 @@ void loop() {
 }
 
 void get_time_elapsed() {
-  minutes_elapsed_ = millis()/60000;
+  minutes_elapsed_ = millis() / 60000;
 }
 
 void get_speed() {
 
-if ((minutes_elapsed_ < 10) || (distance_ < 1000)) {     // Ein Minimum muss zurück gelegt werden für eine vernünftige Berechnung
-  speed_ = 0;
-}
-else {
-    speed_ = distance_ / minutes_elapsed_ *0,06;
+  if ((minutes_elapsed_ < 10) || (distance_ < 1000)) {     // Ein Minimum muss zurück gelegt werden für eine vernünftige Berechnung
+    speed_ = 0;
+  }
+  else {
+    speed_ = distance_ / minutes_elapsed_ * 60 / 1000;
     // Gesamtanzahl der Meter / Gesamtanzahl der Minuten = m/min, *0,06 = * 60 / 1000
-}
+  }
 }
 
 
@@ -129,16 +129,16 @@ String create_html_header() {
   html += button_save;
   html += ">Speichern</button></a>";
   html += "<a href= \"/readData\"><button>Aufzeichnungen</button></a>";
-  html+= "<br>Minuten seit Start: ";
-  html+= minutes_elapsed_;
-  html+= ", Minuten Gehzeit: ";
-  html+= minutes_walking_;
-  html+= ", Minuten Pause: ";
-  html+= minutes_standing_;
-  html+= "<br>";
-  html+= "<p> Geschwindigkeit: ";
-  html+= speed_;
-  html+= "</p>";
+  html += "<br>Minuten seit Start: ";
+  html += minutes_elapsed_;
+  html += ", Minuten Gehzeit: ";
+  html += minutes_walking_;
+  html += ", Minuten Pause: ";
+  html += minutes_standing_;
+  html += "<br>";
+  html += "<p> Geschwindigkeit: ";
+  html += speed_;
+  html += "</p>";
   html += "<form action =\"/submit\">";
   html += "<input type=\"datetime-local\" name=\"starttime\">";
   html += "<input type=\"submit\" value = \"Startzeit\">";
@@ -150,8 +150,8 @@ String create_html_header() {
 }
 
 void handle_root() {
-    get_time_elapsed();
-    if (wheel_rotation_ == wheel_rotation_last_) {            // Achtung, noch ziemlich unsauber. Gleich nach dem Starten ein paar Male händisch aktualisieren und schon bekommt man 
+  get_time_elapsed();
+  if (wheel_rotation_ == wheel_rotation_last_) {            // Achtung, noch ziemlich unsauber. Gleich nach dem Starten ein paar Male händisch aktualisieren und schon bekommt man
     minutes_standing_ += 0.5;                               // eventuell negative Werte zurück
     minutes_walking_ = minutes_elapsed_ - minutes_standing_;
   }
@@ -162,7 +162,7 @@ void handle_root() {
 
   if (server.hasArg("starttime")) {
     if (server.arg("starttime") != NULL) {
-      
+
       starttime_ = server.arg("starttime");
       server.arg("starttime").toCharArray(buff, sizeof(buff) - 1);
       start_time_ = (uint32_t)buff;
@@ -178,28 +178,28 @@ void handle_root() {
 }
 
 void handle_save() {
-  String fileSave = starttime_ + ", " + endtime_ + ", " + distance_  +"<br> <p>";
+  String fileSave = starttime_ + ", " + endtime_ + ", " + distance_  + "<br> <p>";
   appendFile(SPIFFS, "/routen.txt", fileSave.c_str());
   button_save = " style=\"background-color: blue\"";
   server.send(200, "text/html", create_html_header());
 }
 
-void readFile(fs::FS &fs, const char * path){
-    Serial.printf("Reading file: %s\r\n", path);
+void readFile(fs::FS &fs, const char * path) {
+  Serial.printf("Reading file: %s\r\n", path);
 
-    File file = fs.open(path);
-    if(!file || file.isDirectory()){
-        Serial.println("- failed to open file for reading");
-        return;
-    }
+  File file = fs.open(path);
+  if (!file || file.isDirectory()) {
+    Serial.println("- failed to open file for reading");
+    return;
+  }
 
-    Serial.println("- read from file:");
-    while(file.available()){
-//    Serial.write(file.read());
+  Serial.println("- read from file:");
+  while (file.available()) {
+    //    Serial.write(file.read());
     char buff_read = file.read();
     file_read_ += buff_read;
-    }
-    file.close();
+  }
+  file.close();
 }
 
 void appendFile(fs::FS & fs, const char * path, const char * message) {
@@ -218,7 +218,7 @@ void appendFile(fs::FS & fs, const char * path, const char * message) {
   }
   file.close();
 }
- void handle_readData() {
-    readFile(SPIFFS, "/routen.txt");
-server.send(200, "text/html", file_read_);
- }
+void handle_readData() {
+  readFile(SPIFFS, "/routen.txt");
+  server.send(200, "text/html", file_read_);
+}
