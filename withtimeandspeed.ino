@@ -172,6 +172,7 @@ void get_time_standing() {
 void handle_root() {
   get_time_elapsed();
   get_time_standing();
+  get_speed();
   char buff[20];
 
   if (server.hasArg("starttime")) {
