@@ -31,6 +31,8 @@ unsigned long minutes_elapsed_;
 float speed_;
 float minutes_standing_ = 0;
 float minutes_walking_ = 0;
+unsigned long pause_start_ = 0;
+bool pause_on_ = false;
 
 IPAddress local_ip(192, 168, 4, 2);
 IPAddress gateway(192, 168, 4, 2);
@@ -149,15 +151,27 @@ String create_html_header() {
   return html;
 }
 
-void handle_root() {
-  get_time_elapsed();
-  if (wheel_rotation_ == wheel_rotation_last_) {            // Achtung, noch ziemlich unsauber. Gleich nach dem Starten ein paar Male händisch aktualisieren und schon bekommt man
-    minutes_standing_ += 0.5;                               // eventuell negative Werte zurück
-    minutes_walking_ = minutes_elapsed_ - minutes_standing_;
+void get_time_standing() {
+  if (wheel_rotation_ == wheel_rotation_last_) {
+    if (pause_on_ == false) {
+      pause_start_ = millis();
+      pause_on_ = true;
+    }
+    else {
+      minutes_standing_ = millis() - pause_start_ / 60000UL;
+    }
   }
   else {
     wheel_rotation_last_ = wheel_rotation_;
+    pause_on_ = false;
   }
+  minutes_walking_ = minutes_elapsed_ - minutes_standing_;
+
+}
+
+void handle_root() {
+  get_time_elapsed();
+  get_time_standing();
   char buff[20];
 
   if (server.hasArg("starttime")) {
