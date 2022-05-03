@@ -193,7 +193,7 @@ void handle_root() {
 }
 
 void handle_save() {
-  String fileSave = starttime_ + ", " + endtime_ + ", " + distance_  + "<br> <p>";
+  String fileSave = starttime_ + ", " + endtime_ + ", " + distance_  + ", " + speed_ + ", " + minutes_elapsed_ + "<br> <p>";      //Startzeit, Endzeit, Distanz in Meter, Geschwindigkeit in kmh, vergangene Minuten 
   appendFile(SPIFFS, "/routen.txt", fileSave.c_str());
   button_save = " style=\"background-color: blue\"";
   server.send(200, "text/html", create_html_header());
